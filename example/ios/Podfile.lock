@@ -1,0 +1,22 @@
+PODS:
+  - export_video_frame (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - export_video_frame (from `.symlinks/plugins/export_video_frame/ios`)
+  - Flutter (from `.symlinks/flutter/ios-release`)
+
+EXTERNAL SOURCES:
+  export_video_frame:
+    :path: ".symlinks/plugins/export_video_frame/ios"
+  Flutter:
+    :path: ".symlinks/flutter/ios-release"
+
+SPEC CHECKSUMS:
+  export_video_frame: dbafa7c2b73a12ab277685634a3c90601abaed85
+  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+
+PODFILE CHECKSUM: ebd43b443038e611b86ede96e613bd6033c49497
+
+COCOAPODS: 1.6.1

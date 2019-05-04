@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/export_video_frame.iml" filepath="$PROJECT_DIR$/export_video_frame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/export_video_frame_android.iml" filepath="$PROJECT_DIR$/android/export_video_frame_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/android/export_video_frame_example_android.iml" filepath="$PROJECT_DIR$/example/android/export_video_frame_example_android.iml" />
+    </modules>
+  </component>
+</project>
