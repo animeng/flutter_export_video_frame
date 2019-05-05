@@ -26,8 +26,8 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       platformVersion = await ExportVideoFrame.platformVersion;
-      var images = await ExportVideoFrame.exportImage("/mengtnt/");
-      print(images);
+      // var images = await ExportVideoFrame.exportImage("/storage/emulated/0/Download/female_video.mp4");
+      // print(images);
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }

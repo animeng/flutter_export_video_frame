@@ -32,3 +32,8 @@ android {
         disable 'InvalidPackage'
     }
 }
+
+dependencies {
+    implementation 'org.jetbrains:annotations-java5:15.0'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
+}
