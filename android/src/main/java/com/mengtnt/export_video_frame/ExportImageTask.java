@@ -35,7 +35,7 @@ interface Callback {
     void exportPath(ArrayList<String> list);
 }
 
-public final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
+final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
 
     private Callback callBack;
 
@@ -74,7 +74,6 @@ public final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<Strin
                 String key = String.format("%s%d", filePath, index);
                 FileStorage.share().createFile(key,bitmap);
                 result.add(FileStorage.share().filePath(key));
-                Log.d("Media", "bmpVideoWidth:'" + bmpVideoWidth + "'  bmpVideoHeight:'" + bmpVideoHeight + "'" + key);
             }
         } catch (Exception e) {
             Log.e("Media read error",e.toString());

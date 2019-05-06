@@ -30,13 +30,16 @@ class ExportVideoFrame {
   static const MethodChannel _channel =
       const MethodChannel('export_video_frame');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  static Future<bool> cleanImageCache() async {
+    final String result = await _channel.invokeMethod('cleanImageCache');
+    if (result == "success") {
+      return true;
+    }
+    return false;
   }
 
-  static Future<List<File>> exportImage (String filePath) async {
-    final List<dynamic> list = await _channel.invokeMethod('exportImage',[filePath]);
+  static Future<List<File>> exportImage (String filePath,int number) async {
+    final List<dynamic> list = await _channel.invokeMethod('exportImage',[filePath,"$number"]);
     var result = list.cast<String>().map( (path) => File.fromUri(Uri.file(path))).toList();
     return result;
   }

@@ -96,6 +96,15 @@ public class FileStorage {
         return nil
     }
     
+    func cleanAllFile() throws {
+        let contents = try fileManager.contentsOfDirectory(atPath: path)
+        for pathComponent in contents {
+            let filePath = NSString(string: path).appendingPathComponent(pathComponent)
+            let url = URL(fileURLWithPath: filePath)
+            try fileManager.removeItem(at: url)
+        }
+    }
+    
     func removeFile(for key:String) -> Bool {
         let url = URL(fileURLWithPath: filePath(for: key))
         do {

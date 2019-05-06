@@ -24,35 +24,45 @@ SOFTWARE.
 package com.mengtnt.export_video_frame;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
-public class FileStorage {
+class FileStorage {
 
     private String directoryName;
     private Context context;
     private boolean external;
 
     private static FileStorage instance = new FileStorage();
-    public static FileStorage share() {
+
+    static FileStorage share() {
         return instance;
     }
 
-    public FileStorage() {
+    static boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
+    }
+
+    static boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
+    }
+
+    private FileStorage() {
         this.external = false;
         this.directoryName = "ExportImage";
     }
 
-    public void setContext(Context context) {
+    void setContext(Context context) {
         this.context = context;
     }
 
-    public void createFile(String key, Bitmap bitmapImage) {
+    void createFile(String key, Bitmap bitmapImage) {
         FileOutputStream fileOutputStream = null;
         try {
             File file = getFile(fileName(key));
@@ -74,14 +84,28 @@ public class FileStorage {
         }
     }
 
-    public boolean removeFile(String key) {
-        File file = getFile(fileName(key));
-        return file.delete();
-    }
-
-    public String filePath(String key) {
+    String filePath(String key) {
         File file = getFile(fileName(key));
         return file.getAbsolutePath();
+    }
+
+    Boolean cleanCache() {
+        File directory;
+        if(external){
+            directory = getAlbumStorageDir(directoryName);
+        }
+        else {
+            directory = context.getDir(directoryName, Context.MODE_PRIVATE);
+        }
+        File[] files = directory.listFiles();
+        Boolean success = true;
+        for (File file : files){
+            Boolean result = file.delete();
+            if (!result) {
+                success = false;
+            }
+        }
+        return success;
     }
 
     private String fileName(String key) {
@@ -108,33 +132,4 @@ public class FileStorage {
                 Environment.DIRECTORY_PICTURES), albumName);
     }
 
-    public static boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(state);
-    }
-
-    public static boolean isExternalStorageReadable() {
-        String state = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(state) ||
-                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
-    }
-
-    public Bitmap load(String key) {
-        FileInputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(getFile(fileName(key)));
-            return BitmapFactory.decodeStream(inputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
 }

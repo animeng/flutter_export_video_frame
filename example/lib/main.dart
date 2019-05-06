@@ -1,57 +1,120 @@
+/** 
+MIT License
+
+Copyright (c) 2019 mengtnt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:export_video_frame/export_video_frame.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-  
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await ExportVideoFrame.platformVersion;
-      // var images = await ExportVideoFrame.exportImage("/storage/emulated/0/Download/female_video.mp4");
-      // print(images);
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
-
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
+      title: "Plugin Example App",
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(images: <Image>[]),
+    );
+  }
+}
+
+class ImageItem extends StatelessWidget {
+  ImageItem({this.image}) : super(key: ObjectKey(image));
+  final Image image;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children:[
+          image
+        ],
+      ),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.images}) : super(key: key);
+
+  final List<Image> images;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var _isClean = false;
+  Future _getImages() async {
+    var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    var images = await ExportVideoFrame.exportImage(file.path,10);
+    var result = images.map((file) => Image.file(file)).toList();
+    setState(() {
+      widget.images.addAll(result);
+      _isClean = true;
+    });
+  }
+
+  Future _cleanCache() async {
+    var result = await ExportVideoFrame.cleanImageCache();
+    print(result);
+    setState(() {
+      widget.images.clear();
+      _isClean = false;
+    });
+  }
+
+  Future _handleClick() async {
+    if (_isClean) {
+      await _cleanCache();
+    } else {
+      await _getImages();
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Export Image"),
+      ),
+      body: GridView.extent(
+        maxCrossAxisExtent: 400,
+        childAspectRatio: 1.0,
+        padding: const EdgeInsets.all(4),
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 4,
+        children: widget.images.map((image) => ImageItem(image:image)).toList()
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _handleClick,
+        tooltip: _isClean ? 'clean':'addVideo',
+        child: _isClean ? Icon(Icons.clear):Icon(Icons.add),
       ),
     );
   }

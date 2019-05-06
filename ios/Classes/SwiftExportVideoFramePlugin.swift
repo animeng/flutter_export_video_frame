@@ -27,29 +27,40 @@ import AVFoundation
 
 public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
     
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "export_video_frame", binaryMessenger: registrar.messenger())
-    let instance = SwiftExportVideoFramePlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
-
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    if call.method == "getPlatformVersion" {
-        result("iOS " + UIDevice.current.systemVersion)
-    } else if call.method == "exportImage" {
-        if let arguments = call.arguments as? [String],
-            let filePath = arguments.first {
-            DispatchQueue.global(qos: .background).async {
-                let originImgList = self.exportImagePathList(filePath, number: 10)
-                result(originImgList)
-            }
-        }
-    } else {
-        result("No notImplemented")
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: "export_video_frame", binaryMessenger: registrar.messenger())
+        let instance = SwiftExportVideoFramePlugin()
+        registrar.addMethodCallDelegate(instance, channel: channel)
     }
-  }
+
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if call.method == "cleanImageCache" {
+            do {
+                try FileStorage.share?.cleanAllFile()
+                result("success")
+            } catch {
+                result(error.localizedDescription)
+            }
+        } else if call.method == "exportImage" {
+            if let arguments = call.arguments as? [String],
+                arguments.count == 2,
+                let filePath = arguments.first,
+                let second = arguments.last,
+                let number = Int(second) {
+                DispatchQueue.global(qos: .background).async {
+                    let originImgList = self.exportImagePathList(filePath, number: number)
+                    result(originImgList)
+                }
+            } else {
+                let empty = [String]()
+                result(empty)
+            }
+        } else {
+            result("No notImplemented")
+        }
+    }
     
-    public func exportImagePathList(_ filePath: String,number:Int) -> [String] {
+    private func exportImagePathList(_ filePath: String,number:Int) -> [String] {
         let fileUrl = URL(fileURLWithPath: filePath)
         let asset = AVURLAsset(url: fileUrl)
         var imageList = [String]()
@@ -83,7 +94,6 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
                     }
                 }
             }
-            print("actualTime: \(actualTime)")
         }
         return imageList
     }

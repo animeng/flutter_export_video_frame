@@ -42,23 +42,38 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
 
   @Override
   public void onMethodCall(MethodCall call, final Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
+    if (call.method.equals("cleanImageCache")) {
+      Boolean success = FileStorage.share().cleanCache();
+      if (success) {
+        result.success("success");
+      } else {
+        result.error("Clean exception","Fail",null);
+      }
     } else if (call.method.equals("exportImage")) {
       if (!PermissionManager.current().isPermissionGranted()) {
         PermissionManager.current().askForPermission();
       }
+      if (!(FileStorage.isExternalStorageReadable() && FileStorage.isExternalStorageWritable())) {
+        result.error("File permission exception","Not get external storage permission",null);
+        return;
+      }
       ArrayList<String> list = (ArrayList<String>)call.arguments;
+      if (list.size() != 2) {
+        result.error("Parameter exception","Para:filePath,number",null);
+        return;
+      }
       String path = list.get(0);
+      String second = list.get(1);
+      int number = Integer.parseInt(second);
       ExportImageTask task = new ExportImageTask();
-      task.execute(path,20);
+      task.execute(path,number);
       task.setCallBack(new Callback() {
         @Override
         public void exportPath(ArrayList<String> list) {
           if (list != null) {
             result.success(list);
           } else {
-            result.error("Media exception","get frame fail", null);
+            result.error("Media exception","Get frame fail", null);
           }
         }
       });

@@ -26,9 +26,9 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import android.util.Log;
 
-public class MD5 {
+ class MD5 {
 
-    public static String getStr(String str) {
+     static String getStr(String str) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(str.getBytes());
