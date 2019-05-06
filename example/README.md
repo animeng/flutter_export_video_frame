@@ -3,14 +3,114 @@
 Demonstrates how to use the export_video_frame plugin.
 
 ## Getting Started
+1. need add ```image_picker``` as a dependency in your Demo pubspec.yaml file for example.
+2. add the follow code in example
 
-This project is a starting point for a Flutter application.
+```
 
-A few resources to get you started if this is your first Flutter project:
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:export_video_frame/export_video_frame.dart';
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
+void main() => runApp(MyApp());
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: "Plugin Example App",
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(images: <Image>[]),
+    );
+  }
+}
+
+class ImageItem extends StatelessWidget {
+  ImageItem({this.image}) : super(key: ObjectKey(image));
+  final Image image;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children:[
+          image
+        ],
+      ),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.images}) : super(key: key);
+
+  final List<Image> images;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var _isClean = false;
+  Future _getImages() async {
+    var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    var images = await ExportVideoFrame.exportImage(file.path,10);
+    var result = images.map((file) => Image.file(file)).toList();
+    setState(() {
+      widget.images.addAll(result);
+      _isClean = true;
+    });
+  }
+
+  Future _cleanCache() async {
+    var result = await ExportVideoFrame.cleanImageCache();
+    print(result);
+    setState(() {
+      widget.images.clear();
+      _isClean = false;
+    });
+  }
+
+  Future _handleClick() async {
+    if (_isClean) {
+      await _cleanCache();
+    } else {
+      await _getImages();
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Export Image"),
+      ),
+      body: GridView.extent(
+        maxCrossAxisExtent: 400,
+        childAspectRatio: 1.0,
+        padding: const EdgeInsets.all(4),
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 4,
+        children: widget.images.map((image) => ImageItem(image:image)).toList()
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _handleClick,
+        tooltip: _isClean ? 'clean':'addVideo',
+        child: _isClean ? Icon(Icons.clear):Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+```
+###iOS
+Add the following keys to your Info.plist file, located in ```<project root>/ios/Runner/Info.plist:```
+
+* ```NSPhotoLibraryUsageDescription``` - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
+
+###Android
+No configuration required
