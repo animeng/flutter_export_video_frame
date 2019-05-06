@@ -3,10 +3,11 @@
 Demonstrates how to use the export_video_frame plugin.
 
 ## Getting Started
+
 1. need add ```image_picker``` as a dependency in your Demo pubspec.yaml file for example.
 2. add the follow code in example
 
-```
+```dart
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -107,12 +108,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 ```
-###iOS
+
+### iOS
 
 * Add the following keys to your Info.plist file, located in ```<project root>/ios/Runner/Info.plist:```
 
 * ```NSPhotoLibraryUsageDescription``` - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
 
-###Android
+### Android
 
 No configuration required
