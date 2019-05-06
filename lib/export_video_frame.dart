@@ -27,15 +27,14 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 class ExportVideoFrame {
-
   static const MethodChannel _channel =
       const MethodChannel('export_video_frame');
 
-/// Returns the file list of the exporting image
-///
-/// - parameters:
-///    - filePath: file path of video
-///    - number: export the number of frames
+  /// Returns the file list of the exporting image
+  ///
+  /// - parameters:
+  ///    - filePath: file path of video
+  ///    - number: export the number of frames
   static Future<bool> cleanImageCache() async {
     final String result = await _channel.invokeMethod('cleanImageCache');
     if (result == "success") {
@@ -44,11 +43,14 @@ class ExportVideoFrame {
     return false;
   }
 
-/// Returns whether clean success
-  static Future<List<File>> exportImage (String filePath,int number) async {
-    final List<dynamic> list = await _channel.invokeMethod('exportImage',[filePath,"$number"]);
-    var result = list.cast<String>().map( (path) => File.fromUri(Uri.file(path))).toList();
+  /// Returns whether clean success
+  static Future<List<File>> exportImage(String filePath, int number) async {
+    final List<dynamic> list =
+        await _channel.invokeMethod('exportImage', [filePath, "$number"]);
+    var result = list
+        .cast<String>()
+        .map((path) => File.fromUri(Uri.file(path)))
+        .toList();
     return result;
   }
-  
 }
