@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 ### iOS
 
-* Add the following keys to your Info.plist file, located in ```<project root>/ios/Runner/Info.plist:```
+Add the following keys to your Info.plist file, located in 'yourproject/ios/Runner/Info.plist':
 
 * ```NSPhotoLibraryUsageDescription``` - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
 
