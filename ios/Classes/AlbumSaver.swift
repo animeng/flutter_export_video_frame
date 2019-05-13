@@ -27,7 +27,7 @@ import MobileCoreServices
 import Photos
 
 class AlbumSaver {
-    let albumName: String
+    var albumName: String
     
     class func fetchAssetCollection(_ albumName:String) -> PHAssetCollection? {
         let fetchOptions = PHFetchOptions()
@@ -36,6 +36,10 @@ class AlbumSaver {
         
         return collection.firstObject
     }
+    
+    public static let share:AlbumSaver = {
+        return AlbumSaver(folderName: "export_image_Album")
+    }()
     
     init(folderName: String) {
         self.albumName = folderName
@@ -87,15 +91,15 @@ class AlbumSaver {
                 let assetCollection = AlbumSaver.fetchAssetCollection(self.albumName),
                 let image = UIImage(contentsOfFile: filePath) {
                 PHPhotoLibrary.shared()
-                .performChanges({
-                    let assetChangeRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
-                    if let assetPlaceHolder = assetChangeRequest.placeholderForCreatedAsset,
-                        let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetCollection) {
-                        let enumeration: NSArray = [assetPlaceHolder]
-                        albumChangeRequest.addAssets(enumeration)
-                    }
-                    
-                }, completionHandler: complete)
+                    .performChanges({
+                        let assetChangeRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
+                        if let assetPlaceHolder = assetChangeRequest.placeholderForCreatedAsset,
+                            let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetCollection) {
+                            let enumeration: NSArray = [assetPlaceHolder]
+                            albumChangeRequest.addAssets(enumeration)
+                        }
+                        
+                    }, completionHandler: complete)
             } else {
                 complete?(false,NSError(domain: "Permision deny", code: -100, userInfo: nil))
             }
