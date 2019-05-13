@@ -55,9 +55,64 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
                 let empty = [String]()
                 result(empty)
             }
-        } else {
+        } else if call.method == "exportImageBySeconds" {
+            if let arguments = call.arguments as? [String],
+                arguments.count == 2,
+                let filePath = arguments.first,
+                let second = arguments.last,
+                let milli = Int(second) {
+                DispatchQueue.global(qos: .background).async {
+                    if let originImg = self.exportImagePathBySecond(filePath, milli: milli) {
+                        result(originImg)
+                    } else {
+                        result("")
+                    }
+                }
+            } else {
+                result("")
+            }
+        } else if call.method == "saveImage" {
+            if let arguments = call.arguments as? [String],
+                arguments.count == 2,
+                let filePath = arguments.first,
+                let albumName = arguments.last {
+                let saver = AlbumSaver(folderName: albumName);
+                saver.save(filePath: filePath) { (success, error) in
+                    print(error?.localizedDescription)
+                    result(success)
+                }
+            } else {
+                result(false)
+            }
+        }
+        else {
             result("No notImplemented")
         }
+    }
+    
+    private func exportImagePathBySecond(_ filePath: String,milli:Int) -> String? {
+        let fileUrl = URL(fileURLWithPath: filePath)
+        let asset = AVURLAsset(url: fileUrl)
+        let timeScale = asset.duration.timescale
+        let current = Double(milli) / 1000.0
+        let time = CMTime(seconds: current, preferredTimescale: timeScale)
+        
+        let imageGenrator = AVAssetImageGenerator(asset: asset)
+        imageGenrator.appliesPreferredTrackTransform = true
+        imageGenrator.requestedTimeToleranceAfter = .zero
+        imageGenrator.requestedTimeToleranceBefore = .zero
+        var actualTime: CMTime = .zero
+        if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime) {
+            let img = UIImage(cgImage: imageRef)
+            if let data = img.jpegData(compressionQuality: 1.0) {
+                let name = "\(filePath)+\(actualTime.value)"
+                if let filePath = FileStorage.share?.filePath(for: name),
+                    let result = FileStorage.share?.createFile(name, content: data),result {
+                    return filePath
+                }
+            }
+        }
+        return nil
     }
     
     private func exportImagePathList(_ filePath: String,number:Int) -> [String] {

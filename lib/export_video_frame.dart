@@ -30,11 +30,7 @@ class ExportVideoFrame {
   static const MethodChannel _channel =
       const MethodChannel('export_video_frame');
 
-  /// Returns the file list of the exporting image
-  ///
-  /// - parameters:
-  ///    - filePath: file path of video
-  ///    - number: export the number of frames
+  /// Returns whether clean success
   static Future<bool> cleanImageCache() async {
     final String result = await _channel.invokeMethod('cleanImageCache');
     if (result == "success") {
@@ -43,7 +39,22 @@ class ExportVideoFrame {
     return false;
   }
 
-  /// Returns whether clean success
+  /// Save image to album
+  ///
+  /// - parameters:
+  ///    - file: file of video
+  ///    - albumName: save the album name
+  /// Returns whether save success
+  static Future<bool> saveImage(File file,String albumName) async {
+    final bool result = await _channel.invokeMethod('saveImage',[file.path, albumName]);
+    return result;
+  }
+
+  /// Returns the file list of the exporting image
+  ///
+  /// - parameters:
+  ///    - filePath: file path of video
+  ///    - number: export the number of frames
   static Future<List<File>> exportImage(String filePath, int number) async {
     final List<dynamic> list =
         await _channel.invokeMethod('exportImage', [filePath, "$number"]);
@@ -52,5 +63,22 @@ class ExportVideoFrame {
         .map((path) => File.fromUri(Uri.file(path)))
         .toList();
     return result;
+  }
+
+  /// Returns the file list of the exporting image
+  ///
+  /// - parameters:
+  ///    - file: file of video
+  ///    - duration: export the duration of frames
+  static Future<File> exportImageBySeconds(File file, Duration duration) async {
+    var milli = duration.inMilliseconds;
+    final String path =
+        await _channel.invokeMethod('exportImageBySeconds', [file.path, "$milli"]);
+    try {
+      var result = File.fromUri(Uri.file(path));
+      return result;
+    } catch (e) {
+      throw e;
+    }
   }
 }
