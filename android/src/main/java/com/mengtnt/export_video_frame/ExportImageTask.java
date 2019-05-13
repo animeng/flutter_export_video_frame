@@ -46,10 +46,48 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
     @Override
     protected ArrayList<String> doInBackground(Object... objects) {
         String filePath = (String) objects[0];
-        int number = (int)objects[1];
-        if (number <= 0) {
-            return null;
+        Object param = objects[1];
+        if (param instanceof Integer) {
+            int number = ((Integer) param).intValue();
+            if (number > 0) {
+                return  exportImageList(filePath,number);
+            }
+        } else if (param instanceof Long) {
+            Long duration = ((Long) param).longValue();
+            ArrayList result = new ArrayList(1);
+            result.add(exportImageByDuration(filePath,duration));
+            return result;
         }
+
+        return null;
+    }
+
+    protected  String exportImageByDuration(String filePath,Long duration) {
+        String result = new String();
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        try {
+            mediaMetadataRetriever.setDataSource(filePath);
+            Bitmap bmpOriginal = mediaMetadataRetriever.getFrameAtTime(duration * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+            if (bmpOriginal == null) {
+                throw new Exception("bmpOriginal is null");
+            }
+            int bmpVideoHeight = bmpOriginal.getHeight();
+            int bmpVideoWidth = bmpOriginal.getWidth();
+            int byteCount = bmpVideoWidth * bmpVideoHeight * 4;
+            ByteBuffer tmpByteBuffer = ByteBuffer.allocate(byteCount);
+            bmpOriginal.copyPixelsToBuffer(tmpByteBuffer);
+            Bitmap bitmap = Bitmap.createScaledBitmap(bmpOriginal, bmpVideoWidth, bmpVideoHeight, false);
+            String key = String.format("%s%d", filePath, duration);
+            FileStorage.share().createFile(key,bitmap);
+            result = FileStorage.share().filePath(key);
+        } catch (Exception e) {
+            Log.e("Media read error",e.toString());
+        }
+        mediaMetadataRetriever.release();
+        return result;
+    }
+
+    protected ArrayList<String> exportImageList(String filePath,int number) {
         ArrayList result = new ArrayList(number);
 
         MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();

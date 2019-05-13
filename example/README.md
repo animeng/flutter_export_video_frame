@@ -66,6 +66,17 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future _getImagesByDuration() async {
+    var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    var duration = Duration(seconds: 1);
+    var image = await ExportVideoFrame.exportImageBySeconds(file, duration);
+    setState(() {
+      widget.images.add(Image.file(image));
+      _isClean = true;
+    });
+    await ExportVideoFrame.saveImage(image, "Video Export Demo");
+  }
+
   Future _cleanCache() async {
     var result = await ExportVideoFrame.cleanImageCache();
     print(result);
@@ -75,11 +86,19 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future _handleClick() async {
+  Future _handleClickFirst() async {
     if (_isClean) {
       await _cleanCache();
     } else {
       await _getImages();
+    }
+  }
+
+  Future _handleClickSecond() async {
+    if (_isClean) {
+      await _cleanCache();
+    } else {
+      await _getImagesByDuration();
     }
   }
   
@@ -90,18 +109,54 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text("Export Image"),
       ),
-      body: GridView.extent(
-        maxCrossAxisExtent: 400,
-        childAspectRatio: 1.0,
-        padding: const EdgeInsets.all(4),
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        children: widget.images.map((image) => ImageItem(image:image)).toList()
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _handleClick,
-        tooltip: _isClean ? 'clean':'addVideo',
-        child: _isClean ? Icon(Icons.clear):Icon(Icons.add),
+      body: Container(
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              flex: 1,
+              child: 
+                GridView.extent(
+                maxCrossAxisExtent: 400,
+                childAspectRatio: 1.0,
+                padding: const EdgeInsets.all(4),
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                children: widget.images.map((image) => ImageItem(image:image)).toList()
+              ),
+            ),
+            Expanded(
+              flex: 0,
+              child: Center(
+                child: MaterialButton(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  height: 40,
+                  minWidth: 100,
+                  onPressed: () {
+                    _handleClickFirst();
+                  },
+                  color: Colors.orange,
+                  child: Text(_isClean ? "Clean" : "Export image list"),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 0,
+              child: Center(
+                child: MaterialButton(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  height: 40,
+                  minWidth: 150,
+                  onPressed: () {
+                    _handleClickSecond();
+                  },
+                  color: Colors.orange,
+                  child: Text(_isClean ? "Clean" : "Export one image and save"),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -112,9 +167,13 @@ class _MyHomePageState extends State<MyHomePage> {
 ### iOS
 
 Add the following keys to your Info.plist file, located in 'yourproject/ios/Runner/Info.plist':
-
-* ```NSPhotoLibraryUsageDescription``` - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
+NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
 
 ### Android
 
-No configuration required
+Make sure you add the needed permissions to your Android Manifest Permission.
+
+``` gradle
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```

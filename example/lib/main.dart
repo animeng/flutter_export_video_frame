@@ -142,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
               flex: 0,
               child: Center(
                 child: MaterialButton(
-                  padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                   height: 40,
                   minWidth: 100,
                   onPressed: () {
@@ -157,14 +157,14 @@ class _MyHomePageState extends State<MyHomePage> {
               flex: 0,
               child: Center(
                 child: MaterialButton(
-                  padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                   height: 40,
                   minWidth: 150,
                   onPressed: () {
                     _handleClickSecond();
                   },
                   color: Colors.orange,
-                  child: Text(_isClean ? "Clean" : "Export one image and save ablum"),
+                  child: Text(_isClean ? "Clean" : "Export one image and save"),
                 ),
               ),
             ),

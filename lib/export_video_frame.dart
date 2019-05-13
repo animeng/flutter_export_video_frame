@@ -45,8 +45,9 @@ class ExportVideoFrame {
   ///    - file: file of video
   ///    - albumName: save the album name
   /// Returns whether save success
-  static Future<bool> saveImage(File file,String albumName) async {
-    final bool result = await _channel.invokeMethod('saveImage',[file.path, albumName]);
+  static Future<bool> saveImage(File file, String albumName) async {
+    final bool result =
+        await _channel.invokeMethod('saveImage', [file.path, albumName]);
     return result;
   }
 
@@ -72,8 +73,8 @@ class ExportVideoFrame {
   ///    - duration: export the duration of frames
   static Future<File> exportImageBySeconds(File file, Duration duration) async {
     var milli = duration.inMilliseconds;
-    final String path =
-        await _channel.invokeMethod('exportImageBySeconds', [file.path, "$milli"]);
+    final String path = await _channel
+        .invokeMethod('exportImageBySeconds', [file.path, "$milli"]);
     try {
       var result = File.fromUri(Uri.file(path));
       return result;

@@ -59,3 +59,17 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
+
+rootProject.allprojects {
+
+    subprojects {
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                 if (details.requested.group == 'androidx.core'
+                         && !details.requested.name.contains('androidx') ) {
+                     details.useVersion "1.0.1"
+                 }
+            }
+        }
+    }
+}
