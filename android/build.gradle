@@ -9,6 +9,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'org.jetbrains:annotations-java5:15.0'
     }
 }
 
@@ -34,6 +35,5 @@ android {
 }
 
 dependencies {
-    implementation 'org.jetbrains:annotations-java5:15.0'
-    api 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
 }
