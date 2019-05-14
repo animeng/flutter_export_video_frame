@@ -23,6 +23,8 @@ SOFTWARE.
 */
 
 package com.mengtnt.export_video_frame;
+import android.util.Log;
+
 import java.util.ArrayList;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;

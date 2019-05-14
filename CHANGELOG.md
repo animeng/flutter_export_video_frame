@@ -9,3 +9,11 @@
 
 * Export Image according to duration
 * save image to album
+
+### 0.0.2+2
+
+* fix ios export error somethimes
+
+### 0.0.2+3
+
+* some android device get album path error.

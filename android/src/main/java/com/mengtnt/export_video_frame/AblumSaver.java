@@ -1,6 +1,8 @@
 package com.mengtnt.export_video_frame;
 
 import android.os.Environment;
+import android.util.Log;
+
 import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.io.File;
@@ -21,12 +23,15 @@ class AblumSaver {
             public void run() {
                 try {
                     InputStream in;
-                    String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString()+ "/"+albumName;
+                    String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()+ "/"+albumName;
                     File myDir = new File(root);
-                    myDir.mkdirs();
-                    String fileName = System.currentTimeMillis() + ".jpg";
+                    if (!myDir.exists()) {
+                        myDir.mkdirs();
+                    }
+                    String md5 = MD5.getStr(filePath);
+                    String fileName = md5 + ".jpg";
                     File file = new File(myDir, fileName);
-                    if (file.exists()) file.delete();
+                    if (file.exists()) result.success(true);
                     try {
                         FileOutputStream out = new FileOutputStream(file);
                         in = new FileInputStream(filePath);
@@ -39,6 +44,7 @@ class AblumSaver {
                         // write the output file
                         out.flush();
                         out.close();
+                        Log.i("Save Image",myDir + "/" + fileName);
                         result.success(true);
                     } catch (Exception e) {
                         e.printStackTrace();
