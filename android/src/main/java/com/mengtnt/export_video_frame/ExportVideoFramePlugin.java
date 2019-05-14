@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 package com.mengtnt.export_video_frame;
-import android.util.Log;
 
 import java.util.ArrayList;
 import io.flutter.plugin.common.MethodCall;
@@ -38,6 +37,7 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "export_video_frame");
     FileStorage.share().setContext(registrar.context());
+    AblumSaver.share().setCurrent(registrar.context());
     PermissionManager.current().setActivity(registrar.activity());
     channel.setMethodCallHandler(new ExportVideoFramePlugin());
   }
@@ -59,8 +59,8 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
       }
       String path = list.get(0);
       String ablumName = list.get(1);
-      AblumSaver saver = new AblumSaver(ablumName);
-      saver.saveToAlbum(path,result);
+      AblumSaver.share().setAlbumName(ablumName);
+      AblumSaver.share().saveToAlbum(path,result);
     } else if (call.method.equals("cleanImageCache")) {
       Boolean success = FileStorage.share().cleanCache();
       if (success) {

@@ -25,3 +25,8 @@ new add two interface
 ### 0.0.2+4
 
 * That save the image to the ablum move to the main thread in android
+
+### 0.0.2+5
+
+* fix bug : after save image to ablum ,but cann't immediately show .
+* That save the image to the ablum recover the sub thread
