@@ -47,8 +47,7 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
                 let filePath = arguments.first,
                 let second = arguments.last,
                 let number = Int(second) {
-                DispatchQueue.global(qos: .background).async {
-                    let originImgList = self.exportImagePathList(filePath, number: number)
+                exportImagePathList(filePath, number: number) { (originImgList) in
                     result(originImgList)
                 }
             } else {
@@ -115,41 +114,47 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
         return nil
     }
     
-    private func exportImagePathList(_ filePath: String,number:Int) -> [String] {
+    private func exportImagePathList(_ filePath: String,number:Int,complete:@escaping (([String]) -> Void)) {
         let fileUrl = URL(fileURLWithPath: filePath)
         let asset = AVURLAsset(url: fileUrl)
         var imageList = [String]()
-        var times = [CMTime]()
+        var times = [NSValue]()
         let timeScale = asset.duration.timescale
         let total = asset.duration.value
         let step = Int(total) / number
+        var accuracyTime:CMTime = CMTime.zero
         for index in 0..<number {
             let index = index * step
             if index <= Int(total) {
-                let time = CMTime(value: CMTimeValue(index), timescale: timeScale)
-                times.append(time)
+                accuracyTime = CMTime(value: CMTimeValue(index), timescale: timeScale)
+                times.append(NSValue(time: accuracyTime))
             } else {
-                times.append(CMTime(value: total, timescale: timeScale))
+                times.append(NSValue(time: CMTime(value: total, timescale: timeScale)))
             }
         }
         
         let imageGenrator = AVAssetImageGenerator(asset: asset)
         imageGenrator.appliesPreferredTrackTransform = true
-        imageGenrator.requestedTimeToleranceAfter = .zero
-        imageGenrator.requestedTimeToleranceBefore = .zero
-        for time in times {
-            var actualTime: CMTime = .zero
-            if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime) {
-                let img = UIImage(cgImage: imageRef)
-                if let data = img.jpegData(compressionQuality: 1.0) {
-                    let name = "\(filePath)+\(actualTime.value)"
-                    if let filePath = FileStorage.share?.filePath(for: name),
-                        let result = FileStorage.share?.createFile(name, content: data),result {
-                        imageList.append(filePath)
-                    }
+        imageGenrator.requestedTimeToleranceAfter = accuracyTime
+        imageGenrator.requestedTimeToleranceBefore = accuracyTime
+        var timesCount = 0
+        imageGenrator.generateCGImagesAsynchronously(forTimes: times)
+        { (time, imageRef, _, result, error) in
+            timesCount = timesCount + 1
+            if result == .succeeded,
+                let imageRef = imageRef,
+                let image = UIImage(cgImage: imageRef).jpegData(compressionQuality: 1.0)  {
+                let name = "\(filePath)+\(time.value)"
+                if let filePath = FileStorage.share?.filePath(for: name),
+                    let result = FileStorage.share?.createFile(name, content: image),result {
+                    imageList.append(filePath)
+                }
+            }
+            if timesCount == times.count {
+                DispatchQueue.main.async {
+                    complete(imageList)
                 }
             }
         }
-        return imageList
     }
 }

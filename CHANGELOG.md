@@ -30,3 +30,7 @@ new add two interface
 
 * fix bug : after save image to ablum ,but cann't immediately show .
 * That save the image to the ablum recover the sub thread
+
+### 0.0.2+6
+
+* optimize the performance,which export image by number in ios platform
