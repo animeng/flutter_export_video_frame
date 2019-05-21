@@ -24,6 +24,7 @@ SOFTWARE.
 
 package com.mengtnt.export_video_frame;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -48,21 +49,25 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
         String filePath = (String) objects[0];
         Object param = objects[1];
         if (param instanceof Integer) {
-            int number = ((Integer) param).intValue();
+            int number = ((Number) param).intValue();
             if (number > 0) {
-                return  exportImageList(filePath,number);
+                Number third = (Number) objects[2];
+                float radian = third.floatValue();
+                return  exportImageList(filePath,number,radian);
             }
         } else if (param instanceof Long) {
-            Long duration = ((Long) param).longValue();
+            Long duration = ((Number) param).longValue();
+            Number third = (Number)objects[2];
+            float quality = third.floatValue();
             ArrayList result = new ArrayList(1);
-            result.add(exportImageByDuration(filePath,duration));
+            result.add(exportImageByDuration(filePath,duration,quality));
             return result;
         }
 
         return null;
     }
 
-    protected  String exportImageByDuration(String filePath,Long duration) {
+    protected  String exportImageByDuration(String filePath,Long duration,float radian) {
         String result = new String();
         MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
         try {
@@ -73,10 +78,11 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
             }
             int bmpVideoHeight = bmpOriginal.getHeight();
             int bmpVideoWidth = bmpOriginal.getWidth();
-            int byteCount = bmpVideoWidth * bmpVideoHeight * 4;
-            ByteBuffer tmpByteBuffer = ByteBuffer.allocate(byteCount);
-            bmpOriginal.copyPixelsToBuffer(tmpByteBuffer);
-            Bitmap bitmap = Bitmap.createScaledBitmap(bmpOriginal, bmpVideoWidth, bmpVideoHeight, false);
+
+            Matrix m = new Matrix();
+            m.postRotate( radian);
+
+            Bitmap bitmap = Bitmap.createBitmap(bmpOriginal, 0,0,bmpVideoWidth, bmpVideoHeight, m,false);
             String key = String.format("%s%d", filePath, duration);
             FileStorage.share().createFile(key,bitmap);
             result = FileStorage.share().filePath(key);
@@ -87,8 +93,12 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
         return result;
     }
 
-    protected ArrayList<String> exportImageList(String filePath,int number) {
+    protected ArrayList<String> exportImageList(String filePath,int number,float quality) {
         ArrayList result = new ArrayList(number);
+        float scale = (float)0.1;
+        if (quality > 0.1) {
+            scale = quality;
+        }
 
         MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
         try {
@@ -99,16 +109,17 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
             int step = max / number;
 
             for ( int index = 0 ; index < max ; index = index+step ) {
-                Bitmap bmpOriginal = mediaMetadataRetriever.getFrameAtTime(index * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+                Bitmap bmpOriginal = mediaMetadataRetriever.getFrameAtTime(index * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 if (bmpOriginal == null) {
                     continue;
                 }
-                int bmpVideoHeight = bmpOriginal.getHeight();
+                int bmpVideoHeight = bmpOriginal.getHeight() ;
                 int bmpVideoWidth = bmpOriginal.getWidth();
-                int byteCount = bmpVideoWidth * bmpVideoHeight * 4;
-                ByteBuffer tmpByteBuffer = ByteBuffer.allocate(byteCount);
-                bmpOriginal.copyPixelsToBuffer(tmpByteBuffer);
-                Bitmap bitmap = Bitmap.createScaledBitmap(bmpOriginal, bmpVideoWidth, bmpVideoHeight, false);
+                Matrix m = new Matrix();
+                if (scale < 1.0) {
+                    m.setScale(scale, scale);
+                }
+                Bitmap bitmap = Bitmap.createBitmap(bmpOriginal, 0, 0, bmpVideoWidth, bmpVideoHeight, m, false);
                 String key = String.format("%s%d", filePath, index);
                 FileStorage.share().createFile(key,bitmap);
                 result.add(FileStorage.share().filePath(key));

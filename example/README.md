@@ -36,11 +36,7 @@ class ImageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Column(
-        children:[
-          image
-        ],
-      ),
+      child: image
     );
   }
 }
@@ -58,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var _isClean = false;
   Future _getImages() async {
     var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
-    var images = await ExportVideoFrame.exportImage(file.path,10);
+    var images = await ExportVideoFrame.exportImage(file.path,10,0);
     var result = images.map((file) => Image.file(file)).toList();
     setState(() {
       widget.images.addAll(result);
@@ -69,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _getImagesByDuration() async {
     var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
     var duration = Duration(seconds: 1);
-    var image = await ExportVideoFrame.exportImageBySeconds(file, duration);
+    var image = await ExportVideoFrame.exportImageBySeconds(file, duration,pi/2);
     setState(() {
       widget.images.add(Image.file(image));
       _isClean = true;
@@ -122,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.all(4),
                 mainAxisSpacing: 4,
                 crossAxisSpacing: 4,
-                children: widget.images.map((image) => ImageItem(image:image)).toList()
+                children: widget.images.length > 0 ? widget.images.map((image) => ImageItem(image:image)).toList() : [Container()]
               ),
             ),
             Expanded(

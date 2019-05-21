@@ -46,8 +46,9 @@ class ExportVideoFrame {
   ///    - albumName: save the album name
   /// Returns whether save success
   static Future<bool> saveImage(File file, String albumName) async {
+    var para = {"filePath":file.path,"albumName":albumName};
     final bool result =
-        await _channel.invokeMethod('saveImage', [file.path, albumName]);
+        await _channel.invokeMethod('saveImage', para);
     return result;
   }
 
@@ -56,9 +57,11 @@ class ExportVideoFrame {
   /// - parameters:
   ///    - filePath: file path of video
   ///    - number: export the number of frames
-  static Future<List<File>> exportImage(String filePath, int number) async {
+  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android) 
+  static Future<List<File>> exportImage(String filePath, int number,double quality) async {
+    var para = {"filePath":filePath,"number":number,"quality":quality};
     final List<dynamic> list =
-        await _channel.invokeMethod('exportImage', [filePath, "$number"]);
+        await _channel.invokeMethod('exportImage', para);
     var result = list
         .cast<String>()
         .map((path) => File.fromUri(Uri.file(path)))
@@ -71,10 +74,12 @@ class ExportVideoFrame {
   /// - parameters:
   ///    - file: file of video
   ///    - duration: export the duration of frames
-  static Future<File> exportImageBySeconds(File file, Duration duration) async {
+  ///    - radian: rotation the frame ,which will export frame.
+  static Future<File> exportImageBySeconds(File file, Duration duration,double radian) async {
     var milli = duration.inMilliseconds;
+    var para = {"filePath":file.path,"duration":milli,"radian":radian};
     final String path = await _channel
-        .invokeMethod('exportImageBySeconds', [file.path, "$milli"]);
+        .invokeMethod('exportImageBySeconds', para);
     try {
       var result = File.fromUri(Uri.file(path));
       return result;

@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:export_video_frame/export_video_frame.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('export_video_frame');

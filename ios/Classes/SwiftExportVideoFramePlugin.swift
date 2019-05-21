@@ -34,34 +34,34 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if call.method == "cleanImageCache" {
+        
+        switch call.method {
+        case "cleanImageCache":
             do {
                 try FileStorage.share?.cleanAllFile()
                 result("success")
             } catch {
                 result(error.localizedDescription)
             }
-        } else if call.method == "exportImage" {
-            if let arguments = call.arguments as? [String],
-                arguments.count == 2,
-                let filePath = arguments.first,
-                let second = arguments.last,
-                let number = Int(second) {
-                exportImagePathList(filePath, number: number) { (originImgList) in
+        case "exportImage":
+            if let argument = call.arguments as? [String:Any],
+                let filePath = argument["filePath"] as? String,
+                let number = argument["number"] as? Int,
+                let quality = argument["quality"] as? Double {
+                exportImagePathList(filePath, number: number,quality: quality) { (originImgList) in
                     result(originImgList)
                 }
             } else {
                 let empty = [String]()
                 result(empty)
             }
-        } else if call.method == "exportImageBySeconds" {
-            if let arguments = call.arguments as? [String],
-                arguments.count == 2,
-                let filePath = arguments.first,
-                let second = arguments.last,
-                let milli = Int(second) {
+        case "exportImageBySeconds":
+            if let argument = call.arguments as? [String:Any],
+                let filePath = argument["filePath"] as? String,
+                let milli = argument["duration"] as? Int,
+                let radian = argument["radian"] as? Double {
                 DispatchQueue.global(qos: .background).async {
-                    if let originImg = self.exportImagePathBySecond(filePath, milli: milli) {
+                    if let originImg = self.exportImagePathBySecond(filePath, milli: milli,radian: CGFloat(radian)) {
                         result(originImg)
                     } else {
                         result("")
@@ -70,11 +70,10 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
             } else {
                 result("")
             }
-        } else if call.method == "saveImage" {
-            if let arguments = call.arguments as? [String],
-                arguments.count == 2,
-                let filePath = arguments.first,
-                let albumName = arguments.last {
+        case "saveImage":
+            if let argument = call.arguments as? [String:Any],
+                let filePath = argument["filePath"] as? String,
+                let albumName = argument["albumName"] as? String {
                 let saver = AlbumSaver.share
                 saver.albumName = albumName
                 saver.save(filePath: filePath) { (success, error) in
@@ -83,13 +82,13 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
             } else {
                 result(false)
             }
-        }
-        else {
+        default:
             result("No notImplemented")
         }
+        
     }
     
-    private func exportImagePathBySecond(_ filePath: String,milli:Int) -> String? {
+    private func exportImagePathBySecond(_ filePath: String,milli:Int,radian:CGFloat) -> String? {
         let fileUrl = URL(fileURLWithPath: filePath)
         let asset = AVURLAsset(url: fileUrl)
         let timeScale = asset.duration.timescale
@@ -101,20 +100,19 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
         imageGenrator.requestedTimeToleranceAfter = .zero
         imageGenrator.requestedTimeToleranceBefore = .zero
         var actualTime: CMTime = .zero
-        if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime) {
-            let img = UIImage(cgImage: imageRef)
-            if let data = img.jpegData(compressionQuality: 1.0) {
-                let name = "\(filePath)+\(actualTime.value)"
-                if let filePath = FileStorage.share?.filePath(for: name),
-                    let result = FileStorage.share?.createFile(name, content: data),result {
-                    return filePath
-                }
+        if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime),
+            let img = UIImage(cgImage: imageRef).imageByRotate(radius: radian),
+            let data = img.jpegData(compressionQuality: 1.0) {
+            let name = "\(filePath)+\(actualTime.value)"
+            if let filePath = FileStorage.share?.filePath(for: name),
+                let result = FileStorage.share?.createFile(name, content: data),result {
+                return filePath
             }
         }
         return nil
     }
     
-    private func exportImagePathList(_ filePath: String,number:Int,complete:@escaping (([String]) -> Void)) {
+    private func exportImagePathList(_ filePath: String,number:Int,quality:Double,complete:@escaping (([String]) -> Void)) {
         let fileUrl = URL(fileURLWithPath: filePath)
         let asset = AVURLAsset(url: fileUrl)
         var imageList = [String]()
@@ -143,7 +141,7 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
             timesCount = timesCount + 1
             if result == .succeeded,
                 let imageRef = imageRef,
-                let image = UIImage(cgImage: imageRef).jpegData(compressionQuality: 1.0)  {
+                let image = UIImage(cgImage: imageRef).jpegData(compressionQuality: CGFloat(quality))  {
                 let name = "\(filePath)+\(time.value)"
                 if let filePath = FileStorage.share?.filePath(for: name),
                     let result = FileStorage.share?.createFile(name, content: image),result {

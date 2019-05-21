@@ -34,3 +34,7 @@ new add two interface
 ### 0.0.2+6
 
 * optimize the performance,which export image by number in ios platform
+
+### 0.0.3
+
+* add parameter for export frame.That can configure the quality,rotation of the frame

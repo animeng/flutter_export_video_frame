@@ -51,68 +51,65 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
       result.error("File permission exception","Not get external storage permission",null);
       return;
     }
-    if (call.method.equals("saveImage")) {
-      ArrayList<String> list = (ArrayList<String>)call.arguments;
-      if (list.size() != 2) {
-        result.error("Parameter exception","Para:filePath,number",null);
-        return;
-      }
-      String path = list.get(0);
-      String ablumName = list.get(1);
-      AblumSaver.share().setAlbumName(ablumName);
-      AblumSaver.share().saveToAlbum(path,result);
-    } else if (call.method.equals("cleanImageCache")) {
-      Boolean success = FileStorage.share().cleanCache();
-      if (success) {
-        result.success("success");
-      } else {
-        result.error("Clean exception","Fail",null);
-      }
-    } else if (call.method.equals("exportImage")) {
-      ArrayList<String> list = (ArrayList<String>)call.arguments;
-      if (list.size() != 2) {
-        result.error("Parameter exception","Para:filePath,number",null);
-        return;
-      }
-      String path = list.get(0);
-      String second = list.get(1);
-      int number = Integer.parseInt(second);
-      ExportImageTask task = new ExportImageTask();
-      task.execute(path,number);
-      task.setCallBack(new Callback() {
-        @Override
-        public void exportPath(ArrayList<String> list) {
-          if (list != null) {
-            result.success(list);
-          } else {
-            result.error("Media exception","Get frame fail", null);
-          }
+
+    switch (call.method) {
+      case "cleanImageCache": {
+        Boolean success = FileStorage.share().cleanCache();
+        if (success) {
+          result.success("success");
+        } else {
+          result.error("Clean exception", "Fail", null);
         }
-      });
-    } else if (call.method.equals("exportImageBySeconds")) {
-      ArrayList<String> list = (ArrayList<String>)call.arguments;
-      if (list.size() != 2) {
-        result.error("Parameter exception","Para:filePath,number",null);
-        return;
+        break;
       }
-      String path = list.get(0);
-      String second = list.get(1);
-      Long duration = Long.parseLong(second);
-      ExportImageTask task = new ExportImageTask();
-      task.execute(path,duration);
-      task.setCallBack(new Callback() {
-        @Override
-        public void exportPath(ArrayList<String> list) {
-          if ((list != null) && (list.size() > 0)) {
-            result.success(list.get(0));
-          } else {
-            result.error("Media exception","Get frame fail", null);
+      case "saveImage": {
+        String filePath = call.argument("filePath").toString();
+        String albumName = call.argument("albumName").toString();
+        AblumSaver.share().setAlbumName(albumName);
+        AblumSaver.share().saveToAlbum(filePath,result);
+        break;
+      }
+      case "exportImage": {
+        String filePath = call.argument("filePath").toString();
+        Number number = call.argument("number");
+        Number quality = call.argument("quality");
+        ExportImageTask task = new ExportImageTask();
+        task.execute(filePath,number.intValue(),quality);
+        task.setCallBack(new Callback() {
+          @Override
+          public void exportPath(ArrayList<String> list) {
+            if (list != null) {
+              result.success(list);
+            } else {
+              result.error("Media exception","Get frame fail", null);
+            }
           }
-        }
-      });
-    } else {
-      result.notImplemented();
+        });
+        break;
+      }
+      case "exportImageBySeconds": {
+        String filePath = call.argument("filePath").toString();
+        Number duration = call.argument("duration");
+        Number radian = call.argument("radian");
+        ExportImageTask task = new ExportImageTask();
+        task.execute(filePath,duration.longValue(),radian);
+        task.setCallBack(new Callback() {
+          @Override
+          public void exportPath(ArrayList<String> list) {
+            if ((list != null) && (list.size() > 0)) {
+              result.success(list.get(0));
+            } else {
+              result.error("Media exception","Get frame fail", null);
+            }
+          }
+        });
+        break;
+      }
+      default:
+        result.notImplemented();
+        break;
     }
+
   }
 
 }
