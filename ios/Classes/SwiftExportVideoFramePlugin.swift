@@ -101,9 +101,10 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
         imageGenrator.requestedTimeToleranceBefore = .zero
         var actualTime: CMTime = .zero
         if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime),
-            let img = UIImage(cgImage: imageRef).imageByRotate(radius: radian),
+            let img = UIImage(cgImage: imageRef).imageByRotate(radius: -radian),
             let data = img.jpegData(compressionQuality: 1.0) {
-            let name = "\(filePath)+\(actualTime.value)"
+            let radianPrecision = String(format: "%.4f", radian)
+            let name = "\(filePath)+\(actualTime.value)" + radianPrecision
             if let filePath = FileStorage.share?.filePath(for: name),
                 let result = FileStorage.share?.createFile(name, content: data),result {
                 return filePath

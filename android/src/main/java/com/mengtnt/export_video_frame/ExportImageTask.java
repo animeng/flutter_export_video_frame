@@ -49,18 +49,18 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
         String filePath = (String) objects[0];
         Object param = objects[1];
         if (param instanceof Integer) {
-            int number = ((Number) param).intValue();
+            int number = (int)param;
             if (number > 0) {
                 Number third = (Number) objects[2];
-                float radian = third.floatValue();
-                return  exportImageList(filePath,number,radian);
+                float quality = third.floatValue();
+                return  exportImageList(filePath,number,quality);
             }
         } else if (param instanceof Long) {
-            Long duration = ((Number) param).longValue();
+            Long duration = (Long)param;
             Number third = (Number)objects[2];
-            float quality = third.floatValue();
+            float radian = third.floatValue();
             ArrayList result = new ArrayList(1);
-            result.add(exportImageByDuration(filePath,duration,quality));
+            result.add(exportImageByDuration(filePath,duration,radian));
             return result;
         }
 
@@ -80,10 +80,11 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
             int bmpVideoWidth = bmpOriginal.getWidth();
 
             Matrix m = new Matrix();
-            m.postRotate( radian);
+            float degrees = (float) (radian * 180 / Math.PI);
+            m.postRotate(degrees);
 
             Bitmap bitmap = Bitmap.createBitmap(bmpOriginal, 0,0,bmpVideoWidth, bmpVideoHeight, m,false);
-            String key = String.format("%s%d", filePath, duration);
+            String key = String.format("%s%d%.4f", filePath, duration,radian);
             FileStorage.share().createFile(key,bitmap);
             result = FileStorage.share().filePath(key);
         } catch (Exception e) {

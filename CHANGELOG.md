@@ -38,3 +38,7 @@ new add two interface
 ### 0.0.3
 
 * add parameter for export frame.That can configure the quality,rotation of the frame
+
+### 0.0.3+1
+
+* fix rotation image direct problem in ios device.Guarantee rotation is clockwise.

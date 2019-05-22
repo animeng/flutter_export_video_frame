@@ -9,6 +9,7 @@ import Foundation
 
 extension UIImage {
     
+    // CoreImage is coordinates,So rotation is counter-clockwise
     func imageByRotate(radius: CGFloat) -> UIImage? {
         guard let cgImage = cgImage else { return nil }
         if radius == 0 {

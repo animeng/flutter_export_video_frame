@@ -74,7 +74,7 @@ class ExportVideoFrame {
   /// - parameters:
   ///    - file: file of video
   ///    - duration: export the duration of frames
-  ///    - radian: rotation the frame ,which will export frame.
+  ///    - radian: rotation the frame ,which will export frame.Rotation is clockwise.
   static Future<File> exportImageBySeconds(File file, Duration duration,double radian) async {
     var milli = duration.inMilliseconds;
     var para = {"filePath":file.path,"duration":milli,"radian":radian};
