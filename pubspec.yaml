@@ -1,6 +1,6 @@
 name: export_video_frame
 description: A Flutter plugin for iOS and Android for exporting picture from video file.
-version: 0.0.3+1
+version: 0.0.4
 author: mengtnt <animeng68@gmail.com>
 homepage: https://github.com/animeng/flutter_export_video_frame
 

@@ -43,13 +43,27 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
             } catch {
                 result(error.localizedDescription)
             }
+        case "exportGifImagePathList":
+            if let argument = call.arguments as? [String:Any],
+                let filePath = argument["filePath"] as? String,
+                let quality = argument["quality"] as? Double {
+                DispatchQueue.global(qos: .background).async {
+                    let originImgList = ExportManager.exportGifImagePathList(filePath, quality: quality)
+                    result(originImgList)
+                }
+            } else {
+                let empty = [String]()
+                result(empty)
+            }
         case "exportImage":
             if let argument = call.arguments as? [String:Any],
                 let filePath = argument["filePath"] as? String,
                 let number = argument["number"] as? Int,
                 let quality = argument["quality"] as? Double {
-                exportImagePathList(filePath, number: number,quality: quality) { (originImgList) in
-                    result(originImgList)
+                DispatchQueue.global(qos: .background).async {
+                    ExportManager.exportImagePathList(filePath, number: number,quality: quality) { (originImgList) in
+                        result(originImgList)
+                    }
                 }
             } else {
                 let empty = [String]()
@@ -61,7 +75,7 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
                 let milli = argument["duration"] as? Int,
                 let radian = argument["radian"] as? Double {
                 DispatchQueue.global(qos: .background).async {
-                    if let originImg = self.exportImagePathBySecond(filePath, milli: milli,radian: CGFloat(radian)) {
+                    if let originImg = ExportManager.exportImagePathBySecond(filePath, milli: milli,radian: CGFloat(radian)) {
                         result(originImg)
                     } else {
                         result("")
@@ -88,72 +102,4 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
         
     }
     
-    private func exportImagePathBySecond(_ filePath: String,milli:Int,radian:CGFloat) -> String? {
-        let fileUrl = URL(fileURLWithPath: filePath)
-        let asset = AVURLAsset(url: fileUrl)
-        let timeScale = asset.duration.timescale
-        let current = Double(milli) / 1000.0
-        let time = CMTime(seconds: current, preferredTimescale: timeScale)
-        
-        let imageGenrator = AVAssetImageGenerator(asset: asset)
-        imageGenrator.appliesPreferredTrackTransform = true
-        imageGenrator.requestedTimeToleranceAfter = .zero
-        imageGenrator.requestedTimeToleranceBefore = .zero
-        var actualTime: CMTime = .zero
-        if let imageRef = try? imageGenrator.copyCGImage(at: time, actualTime: &actualTime),
-            let img = UIImage(cgImage: imageRef).imageByRotate(radius: -radian),
-            let data = img.jpegData(compressionQuality: 1.0) {
-            let radianPrecision = String(format: "%.4f", radian)
-            let name = "\(filePath)+\(actualTime.value)" + radianPrecision
-            if let filePath = FileStorage.share?.filePath(for: name),
-                let result = FileStorage.share?.createFile(name, content: data),result {
-                return filePath
-            }
-        }
-        return nil
-    }
-    
-    private func exportImagePathList(_ filePath: String,number:Int,quality:Double,complete:@escaping (([String]) -> Void)) {
-        let fileUrl = URL(fileURLWithPath: filePath)
-        let asset = AVURLAsset(url: fileUrl)
-        var imageList = [String]()
-        var times = [NSValue]()
-        let timeScale = asset.duration.timescale
-        let total = asset.duration.value
-        let step = Int(total) / number
-        var accuracyTime:CMTime = CMTime.zero
-        for index in 0..<number {
-            let index = index * step
-            if index <= Int(total) {
-                accuracyTime = CMTime(value: CMTimeValue(index), timescale: timeScale)
-                times.append(NSValue(time: accuracyTime))
-            } else {
-                times.append(NSValue(time: CMTime(value: total, timescale: timeScale)))
-            }
-        }
-        
-        let imageGenrator = AVAssetImageGenerator(asset: asset)
-        imageGenrator.appliesPreferredTrackTransform = true
-        imageGenrator.requestedTimeToleranceAfter = accuracyTime
-        imageGenrator.requestedTimeToleranceBefore = accuracyTime
-        var timesCount = 0
-        imageGenrator.generateCGImagesAsynchronously(forTimes: times)
-        { (time, imageRef, _, result, error) in
-            timesCount = timesCount + 1
-            if result == .succeeded,
-                let imageRef = imageRef,
-                let image = UIImage(cgImage: imageRef).jpegData(compressionQuality: CGFloat(quality))  {
-                let name = "\(filePath)+\(time.value)"
-                if let filePath = FileStorage.share?.filePath(for: name),
-                    let result = FileStorage.share?.createFile(name, content: image),result {
-                    imageList.append(filePath)
-                }
-            }
-            if timesCount == times.count {
-                DispatchQueue.main.async {
-                    complete(imageList)
-                }
-            }
-        }
-    }
 }

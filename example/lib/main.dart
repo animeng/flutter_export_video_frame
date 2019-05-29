@@ -77,6 +77,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future _getGifImages() async {
+    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var images = await ExportVideoFrame.exportGifImage(file.path,0);
+    var result = images.map((file) => Image.file(file)).toList();
+    setState(() {
+      widget.images.addAll(result);
+      _isClean = true;
+    });
+  }
+
   Future _getImagesByDuration() async {
     var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
     var duration = Duration(seconds: 1);
@@ -110,6 +120,14 @@ class _MyHomePageState extends State<MyHomePage> {
       await _cleanCache();
     } else {
       await _getImagesByDuration();
+    }
+  }
+
+  Future _handleClickThird() async {
+    if (_isClean) {
+      await _cleanCache();
+    } else {
+      await _getGifImages();
     }
   }
   
@@ -163,6 +181,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   color: Colors.orange,
                   child: Text(_isClean ? "Clean" : "Export one image and save"),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 0,
+              child: Center(
+                child: MaterialButton(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  height: 40,
+                  minWidth: 150,
+                  onPressed: () {
+                    _handleClickThird();
+                  },
+                  color: Colors.orange,
+                  child: Text(_isClean ? "Clean" : "Export gif image"),
                 ),
               ),
             ),

@@ -68,6 +68,22 @@ add ```export_video_frame``` as a dependency in your pubspec.yaml file.
     }
   }
 
+  /// Returns the file list of the exporting frame for gif file
+  ///
+  /// - parameters:
+  ///    - filePath: file path of video
+  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android) 
+  static Future<List<File>> exportGifImage(String filePath, double quality) async {
+    var para = {"filePath":filePath,"quality":quality};
+    final List<dynamic> list =
+        await _channel.invokeMethod('exportGifImagePathList', para);
+    var result = list
+        .cast<String>()
+        .map((path) => File.fromUri(Uri.file(path)))
+        .toList();
+    return result;
+  }
+
 ```
 
 ### ios
