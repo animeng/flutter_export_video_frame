@@ -48,3 +48,7 @@ new add two interface
 add new api
 
 * Export Image frame for gif file
+
+### 0.0.4+1
+
+* Export Image for gif file in Android

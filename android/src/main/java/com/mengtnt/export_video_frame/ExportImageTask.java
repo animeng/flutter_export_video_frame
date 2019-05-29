@@ -29,7 +29,10 @@ import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 interface Callback {
@@ -62,9 +65,33 @@ final class ExportImageTask extends AsyncTask<Object,Void,ArrayList<String>> {
             ArrayList result = new ArrayList(1);
             result.add(exportImageByDuration(filePath,duration,radian));
             return result;
+        } else if (param instanceof Number) {
+            Number second = (Number)param;
+            return exportGifImageList(filePath,second.floatValue());
         }
 
         return null;
+    }
+
+    protected ArrayList<String> exportGifImageList(String filePath,float quality) {
+        ArrayList result = new ArrayList();
+        GifDecoder decoder = new GifDecoder();
+        try {
+            InputStream input = new FileInputStream(filePath);
+            decoder.read(input);
+            decoder.decodeImageData();
+            GifDecoder.GifFrame[] frames = decoder.getFrames();
+            int index = 0;
+            for (GifDecoder.GifFrame frame:frames) {
+                String key = String.format("%s%d%.1f", filePath, index,quality);
+                FileStorage.share().createFile(key,frame.image);
+                result.add(FileStorage.share().filePath(key));
+                index ++;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     protected  String exportImageByDuration(String filePath,Long duration,float radian) {

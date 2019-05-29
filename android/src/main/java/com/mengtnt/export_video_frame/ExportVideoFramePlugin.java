@@ -69,6 +69,23 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
         AblumSaver.share().saveToAlbum(filePath,result);
         break;
       }
+      case "exportGifImagePathList": {
+        String filePath = call.argument("filePath").toString();
+        Number quality = call.argument("quality");
+        ExportImageTask task = new ExportImageTask();
+        task.execute(filePath,quality);
+        task.setCallBack(new Callback() {
+          @Override
+          public void exportPath(ArrayList<String> list) {
+            if (list != null) {
+              result.success(list);
+            } else {
+              result.error("Media exception","Get frame fail", null);
+            }
+          }
+        });
+        break;
+      }
       case "exportImage": {
         String filePath = call.argument("filePath").toString();
         Number number = call.argument("number");
