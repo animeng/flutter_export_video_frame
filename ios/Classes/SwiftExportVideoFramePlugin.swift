@@ -30,11 +30,13 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "export_video_frame", binaryMessenger: registrar.messenger())
         let instance = SwiftExportVideoFramePlugin()
+        instance.registrar = registrar
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
+    weak var registrar:FlutterPluginRegistrar!
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        
         switch call.method {
         case "cleanImageCache":
             do {
@@ -88,9 +90,14 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
             if let argument = call.arguments as? [String:Any],
                 let filePath = argument["filePath"] as? String,
                 let albumName = argument["albumName"] as? String {
+                var waterPath:String?
+                if let path = argument["waterMark"] as? String {
+                    let key = registrar.lookupKey(forAsset: path)
+                    waterPath = Bundle.main.path(forResource: key, ofType: nil)
+                }
                 let saver = AlbumSaver.share
                 saver.albumName = albumName
-                saver.save(filePath: filePath) { (success, error) in
+                saver.save(filePath: filePath,waterPath: waterPath) { (success, error) in
                     result(success)
                 }
             } else {

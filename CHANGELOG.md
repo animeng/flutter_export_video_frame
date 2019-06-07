@@ -52,3 +52,7 @@ add new api
 ### 0.0.4+1
 
 * Export Image for gif file in Android
+
+### 0.0.5
+
+* Can add watermark when save Image to ablum

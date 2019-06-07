@@ -24,6 +24,13 @@ SOFTWARE.
 
 package com.mengtnt.export_video_frame;
 
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import java.io.FileDescriptor;
+import java.io.InputStream;
 import java.util.ArrayList;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -39,7 +46,15 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
     FileStorage.share().setContext(registrar.context());
     AblumSaver.share().setCurrent(registrar.context());
     PermissionManager.current().setActivity(registrar.activity());
-    channel.setMethodCallHandler(new ExportVideoFramePlugin());
+    ExportVideoFramePlugin plugin = new ExportVideoFramePlugin();
+    plugin.setRegistrar(registrar);
+    channel.setMethodCallHandler(plugin);
+  }
+
+  private Registrar registrar;
+
+  public void setRegistrar(Registrar registrar) {
+    this.registrar = registrar;
   }
 
   @Override
@@ -65,8 +80,20 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
       case "saveImage": {
         String filePath = call.argument("filePath").toString();
         String albumName = call.argument("albumName").toString();
+        Bitmap waterBitMap = null;
         AblumSaver.share().setAlbumName(albumName);
-        AblumSaver.share().saveToAlbum(filePath,result);
+        if (call.argument("waterMark") != null) {
+          String waterPathKey = call.argument("waterMark").toString();
+          AssetManager assetManager = registrar.context().getAssets();
+          String key = registrar.lookupKeyForAsset(waterPathKey);
+          try {
+            InputStream in = assetManager.open(key);
+            waterBitMap = BitmapFactory.decodeStream(in);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+        AblumSaver.share().saveToAlbum(filePath,waterBitMap,result);
         break;
       }
       case "exportGifImagePathList": {

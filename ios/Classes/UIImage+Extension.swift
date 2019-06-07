@@ -9,6 +9,19 @@ import Foundation
 
 extension UIImage {
     
+    func imageAddWatherMark(waterMark:UIImage,scale:Float) -> UIImage? {
+        let width = ceil(CGFloat(scale)*size.width)
+        let height = waterMark.size.height * width / waterMark.size.width
+        let x = size.width - width - 10
+        let y = size.height - height - 10
+        UIGraphicsBeginImageContext(size)
+        self.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        waterMark.draw(in: CGRect(x: x, y: y, width: width, height: height))
+        let result = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return result
+    }
+    
     // CoreImage is coordinates,So rotation is counter-clockwise
     func imageByRotate(radius: CGFloat) -> UIImage? {
         guard let cgImage = cgImage else { return nil }

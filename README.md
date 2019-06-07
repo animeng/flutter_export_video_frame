@@ -24,6 +24,7 @@ add ```export_video_frame``` as a dependency in your pubspec.yaml file.
   /// - parameters:
   ///    - file: file of video
   ///    - albumName: save the album name
+  ///    - waterMark:assetName "images/water_mark.png"
   /// Returns whether save success
   static Future<bool> saveImage(File file, String albumName) async {
     var para = {"filePath":file.path,"albumName":albumName};

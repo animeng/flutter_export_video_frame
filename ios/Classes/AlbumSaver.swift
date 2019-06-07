@@ -83,23 +83,29 @@ class AlbumSaver {
         }
     }
     
-    func save(filePath: String,complete:((Bool, Error?) -> Void)? = nil) {
+    func save(filePath: String,waterPath:String? = nil,complete:((Bool, Error?) -> Void)? = nil) {
         
         self.checkAuthorization {[weak self] (success) in
             guard let `self` = self else { return }
             if success,
                 let assetCollection = AlbumSaver.fetchAssetCollection(self.albumName),
                 let image = UIImage(contentsOfFile: filePath) {
-                PHPhotoLibrary.shared()
-                    .performChanges({
-                        let assetChangeRequest = PHAssetChangeRequest.creationRequestForAsset(from: image)
-                        if let assetPlaceHolder = assetChangeRequest.placeholderForCreatedAsset,
-                            let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetCollection) {
-                            let enumeration: NSArray = [assetPlaceHolder]
-                            albumChangeRequest.addAssets(enumeration)
-                        }
-                        
-                    }, completionHandler: complete)
+                var result:UIImage?
+                if let path = waterPath,
+                    let waterImage = UIImage(contentsOfFile: path) {
+                    result = image.imageAddWatherMark(waterMark: waterImage, scale: 0.2)
+                }
+                if let result = result {
+                    PHPhotoLibrary.shared()
+                        .performChanges({
+                            let assetChangeRequest = PHAssetChangeRequest.creationRequestForAsset(from: result)
+                            if let assetPlaceHolder = assetChangeRequest.placeholderForCreatedAsset,
+                                let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetCollection) {
+                                let enumeration: NSArray = [assetPlaceHolder]
+                                albumChangeRequest.addAssets(enumeration)
+                            }
+                        },completionHandler: complete)
+                }
             } else {
                 complete?(false,NSError(domain: "Permision deny", code: -100, userInfo: nil))
             }

@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
       widget.images.add(Image.file(image));
       _isClean = true;
     });
-    await ExportVideoFrame.saveImage(image, "Video Export Demo");
+    await ExportVideoFrame.saveImage(image, "Video Export Demo",waterMark: "images/water_mark.png");
   }
 
   Future _cleanCache() async {

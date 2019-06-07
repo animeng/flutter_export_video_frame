@@ -44,9 +44,13 @@ class ExportVideoFrame {
   /// - parameters:
   ///    - file: file of video
   ///    - albumName: save the album name
+  ///    - waterMark:assetName "images/water_mark.png"
   /// Returns whether save success
-  static Future<bool> saveImage(File file, String albumName) async {
+  static Future<bool> saveImage(File file, String albumName,{String waterMark}) async {
     var para = {"filePath":file.path,"albumName":albumName};
+    if (waterMark != null) {
+      para.addAll({"waterMark":waterMark});
+    }
     final bool result =
         await _channel.invokeMethod('saveImage', para);
     return result;
