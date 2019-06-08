@@ -24,14 +24,17 @@ SOFTWARE.
 
 package com.mengtnt.export_video_frame;
 
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.RectF;
 
-import java.io.FileDescriptor;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Map;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -81,11 +84,16 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
         String filePath = call.argument("filePath").toString();
         String albumName = call.argument("albumName").toString();
         Bitmap waterBitMap = null;
+        PointF waterPoint = null;
         AblumSaver.share().setAlbumName(albumName);
-        if (call.argument("waterMark") != null) {
+        if (call.argument("waterMark") != null && call.argument("waterOrigin") != null) {
           String waterPathKey = call.argument("waterMark").toString();
           AssetManager assetManager = registrar.context().getAssets();
           String key = registrar.lookupKeyForAsset(waterPathKey);
+          Map<String,Number> rect = call.argument("waterOrigin");
+          Double x = rect.get("x").doubleValue();
+          Double y = rect.get("y").doubleValue();
+          waterPoint = new PointF(x.floatValue(),y.floatValue());
           try {
             InputStream in = assetManager.open(key);
             waterBitMap = BitmapFactory.decodeStream(in);
@@ -93,7 +101,7 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
             e.printStackTrace();
           }
         }
-        AblumSaver.share().saveToAlbum(filePath,waterBitMap,result);
+        AblumSaver.share().saveToAlbum(filePath,waterBitMap,waterPoint,result);
         break;
       }
       case "exportGifImagePathList": {

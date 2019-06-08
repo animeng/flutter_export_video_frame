@@ -56,3 +56,7 @@ add new api
 ### 0.0.5
 
 * Can add watermark when save Image to ablum
+
+### 0.0.5+1
+
+* set watermark position

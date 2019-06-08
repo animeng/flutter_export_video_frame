@@ -9,11 +9,11 @@ import Foundation
 
 extension UIImage {
     
-    func imageAddWatherMark(waterMark:UIImage,scale:Float) -> UIImage? {
-        let width = ceil(CGFloat(scale)*size.width)
-        let height = waterMark.size.height * width / waterMark.size.width
-        let x = size.width - width - 10
-        let y = size.height - height - 10
+    func imageAddWatherMark(waterMark:UIImage,originRatio:CGPoint) -> UIImage? {
+        let width = waterMark.size.width
+        let height = waterMark.size.height
+        let x = originRatio.x * size.width
+        let y = originRatio.y * size.height
         UIGraphicsBeginImageContext(size)
         self.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
         waterMark.draw(in: CGRect(x: x, y: y, width: width, height: height))

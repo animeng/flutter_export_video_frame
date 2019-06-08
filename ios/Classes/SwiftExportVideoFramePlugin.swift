@@ -91,13 +91,18 @@ public class SwiftExportVideoFramePlugin: NSObject, FlutterPlugin {
                 let filePath = argument["filePath"] as? String,
                 let albumName = argument["albumName"] as? String {
                 var waterPath:String?
-                if let path = argument["waterMark"] as? String {
+                var wateOrigin:CGPoint?
+                if let path = argument["waterMark"] as? String,
+                    let rect = argument["waterOrigin"] as? [String:Any],
+                    let xRatio = rect["x"] as? Double,
+                    let yRatio = rect["y"] as? Double {
                     let key = registrar.lookupKey(forAsset: path)
                     waterPath = Bundle.main.path(forResource: key, ofType: nil)
+                    wateOrigin = CGPoint(x: xRatio, y: yRatio)
                 }
                 let saver = AlbumSaver.share
                 saver.albumName = albumName
-                saver.save(filePath: filePath,waterPath: waterPath) { (success, error) in
+                saver.save(filePath: filePath,waterPath: waterPath,originRatio: wateOrigin) { (success, error) in
                     result(success)
                 }
             } else {

@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Environment;
@@ -37,7 +38,7 @@ class AblumSaver {
         this.current = current;
     }
 
-    private String addWatermark(Bitmap source, Bitmap watermark, float ratio) {
+    private String addWatermark(Bitmap source, Bitmap watermark, PointF ratio) {
         Canvas canvas;
         Paint paint;
         Bitmap bmp;
@@ -45,8 +46,6 @@ class AblumSaver {
         RectF r;
 
         int width, height;
-        float scale;
-
         width = source.getWidth();
         height = source.getHeight();
 
@@ -58,19 +57,15 @@ class AblumSaver {
         canvas = new Canvas(bmp);
         canvas.drawBitmap(source, 0, 0, paint);
 
-        // Scale the watermark to be approximately to the ratio given of the source image height
-        scale = (float) (((float) height * ratio) / (float) watermark.getHeight());
-
         // Create the matrix
         matrix = new Matrix();
-        matrix.postScale(scale, scale);
+        matrix.postScale((float)1, (float)1);
 
         // Determine the post-scaled size of the watermark
         r = new RectF(0, 0, watermark.getWidth(), watermark.getHeight());
         matrix.mapRect(r);
 
-        // Move the watermark to the bottom right corner
-        matrix.postTranslate(width - r.width(), height - r.height());
+        matrix.postTranslate(width * ratio.x, height * ratio.y);
 
         // Draw the watermark
         canvas.drawBitmap(watermark, matrix, paint);
@@ -81,7 +76,7 @@ class AblumSaver {
 
     }
 
-    void saveToAlbum(final String filePath, final Bitmap water, final Result result){
+    void saveToAlbum(final String filePath, final Bitmap water, final PointF ratio, final Result result){
 
         new Thread(new Runnable() {
             @Override
@@ -98,7 +93,7 @@ class AblumSaver {
                         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                         Bitmap source = BitmapFactory.decodeFile(filePath,bmOptions);
 
-                        resultPath = addWatermark(source,water, (float)0.2);
+                        resultPath = addWatermark(source,water, ratio);
                     }
                     String md5 = MD5.getStr(resultPath);
                     String fileName = md5 + ".jpg";

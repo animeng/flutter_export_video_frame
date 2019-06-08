@@ -25,9 +25,14 @@ add ```export_video_frame``` as a dependency in your pubspec.yaml file.
   ///    - file: file of video
   ///    - albumName: save the album name
   ///    - waterMark:assetName "images/water_mark.png"
+  ///    - waterOriginRatio: relative the ratio of the saved image. value between 0 - 1.0
   /// Returns whether save success
-  static Future<bool> saveImage(File file, String albumName) async {
-    var para = {"filePath":file.path,"albumName":albumName};
+  static Future<bool> saveImage(File file, String albumName,{String waterMark,Point waterOriginRatio}) async {
+    Map<String,dynamic> para = {"filePath":file.path,"albumName":albumName};
+    if (waterMark != null) {
+      para.addAll({"waterMark":waterMark});
+      para.addAll({"waterOrigin":{"x":waterOriginRatio.x,"y":waterOriginRatio.y}});
+    }
     final bool result =
         await _channel.invokeMethod('saveImage', para);
     return result;

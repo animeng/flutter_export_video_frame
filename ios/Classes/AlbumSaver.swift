@@ -83,7 +83,7 @@ class AlbumSaver {
         }
     }
     
-    func save(filePath: String,waterPath:String? = nil,complete:((Bool, Error?) -> Void)? = nil) {
+    func save(filePath: String,waterPath:String? = nil,originRatio:CGPoint? = nil,complete:((Bool, Error?) -> Void)? = nil) {
         
         self.checkAuthorization {[weak self] (success) in
             guard let `self` = self else { return }
@@ -92,8 +92,9 @@ class AlbumSaver {
                 let image = UIImage(contentsOfFile: filePath) {
                 var result:UIImage?
                 if let path = waterPath,
-                    let waterImage = UIImage(contentsOfFile: path) {
-                    result = image.imageAddWatherMark(waterMark: waterImage, scale: 0.2)
+                    let waterImage = UIImage(contentsOfFile: path),
+                    let origin = originRatio {
+                    result = image.imageAddWatherMark(waterMark: waterImage, originRatio:origin)
                 }
                 if let result = result {
                     PHPhotoLibrary.shared()
