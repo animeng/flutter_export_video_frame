@@ -60,3 +60,7 @@ add new api
 ### 0.0.5+1
 
 * set watermark position
+
+### 0.0.5+2
+
+* set watermark alignment and scale

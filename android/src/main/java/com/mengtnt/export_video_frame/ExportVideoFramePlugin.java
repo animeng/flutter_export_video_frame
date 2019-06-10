@@ -85,15 +85,18 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
         String albumName = call.argument("albumName").toString();
         Bitmap waterBitMap = null;
         PointF waterPoint = null;
+        Double scale = 1.0;
         AblumSaver.share().setAlbumName(albumName);
-        if (call.argument("waterMark") != null && call.argument("waterOrigin") != null) {
+        if (call.argument("waterMark") != null && call.argument("alignment") != null) {
           String waterPathKey = call.argument("waterMark").toString();
           AssetManager assetManager = registrar.context().getAssets();
           String key = registrar.lookupKeyForAsset(waterPathKey);
-          Map<String,Number> rect = call.argument("waterOrigin");
+          Map<String,Number> rect = call.argument("alignment");
           Double x = rect.get("x").doubleValue();
           Double y = rect.get("y").doubleValue();
           waterPoint = new PointF(x.floatValue(),y.floatValue());
+          Number number = call.argument("scale");
+          scale = number.doubleValue();
           try {
             InputStream in = assetManager.open(key);
             waterBitMap = BitmapFactory.decodeStream(in);
@@ -101,7 +104,7 @@ public class ExportVideoFramePlugin implements MethodCallHandler {
             e.printStackTrace();
           }
         }
-        AblumSaver.share().saveToAlbum(filePath,waterBitMap,waterPoint,result);
+        AblumSaver.share().saveToAlbum(filePath,waterBitMap,waterPoint,scale.floatValue(),result);
         break;
       }
       case "exportGifImagePathList": {

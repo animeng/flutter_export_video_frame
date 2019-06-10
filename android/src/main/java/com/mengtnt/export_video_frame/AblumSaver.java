@@ -38,7 +38,7 @@ class AblumSaver {
         this.current = current;
     }
 
-    private String addWatermark(Bitmap source, Bitmap watermark, PointF ratio) {
+    private String addWatermark(Bitmap source, Bitmap watermark, PointF ratio,float scale) {
         Canvas canvas;
         Paint paint;
         Bitmap bmp;
@@ -59,13 +59,15 @@ class AblumSaver {
 
         // Create the matrix
         matrix = new Matrix();
-        matrix.postScale((float)1, (float)1);
+        matrix.postScale(scale, scale);
 
         // Determine the post-scaled size of the watermark
-        r = new RectF(0, 0, watermark.getWidth(), watermark.getHeight());
+        int waterWidth = watermark.getWidth();
+        int waterHeight = watermark.getHeight();
+        r = new RectF(0, 0, waterWidth, waterHeight);
         matrix.mapRect(r);
 
-        matrix.postTranslate(width * ratio.x, height * ratio.y);
+        matrix.postTranslate((ratio.x + 1)*(width - waterWidth*scale)/2, (ratio.y + 1)*(height - waterHeight*scale)/2 );
 
         // Draw the watermark
         canvas.drawBitmap(watermark, matrix, paint);
@@ -76,7 +78,7 @@ class AblumSaver {
 
     }
 
-    void saveToAlbum(final String filePath, final Bitmap water, final PointF ratio, final Result result){
+    void saveToAlbum(final String filePath, final Bitmap water, final PointF ratio,final float scale, final Result result){
 
         new Thread(new Runnable() {
             @Override
@@ -93,7 +95,7 @@ class AblumSaver {
                         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                         Bitmap source = BitmapFactory.decodeFile(filePath,bmOptions);
 
-                        resultPath = addWatermark(source,water, ratio);
+                        resultPath = addWatermark(source,water, ratio,scale);
                     }
                     String md5 = MD5.getStr(resultPath);
                     String fileName = md5 + ".jpg";
