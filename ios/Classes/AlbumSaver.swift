@@ -98,6 +98,8 @@ class AlbumSaver {
                     result = image.imageAddWatherMark(waterMark: waterImage,
                                                       alignment:alignment,
                                                       scale: CGFloat(scale))
+                } else {
+                    result = image
                 }
                 if let result = result {
                     PHPhotoLibrary.shared()

@@ -64,3 +64,7 @@ add new api
 ### 0.0.5+2
 
 * set watermark alignment and scale
+
+### 0.0.5+3
+
+* fix no water mark export fail bug
