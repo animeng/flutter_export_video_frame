@@ -11,6 +11,8 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,6 +27,8 @@ class AblumSaver {
     private Context current;
 
     private static AblumSaver instance = new AblumSaver();
+
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     static AblumSaver share() {
         return instance;
@@ -101,7 +105,12 @@ class AblumSaver {
                     String fileName = md5 + ".jpg";
                     File file = new File(myDir, fileName);
                     if (file.exists()) {
-                        result.success(true);
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(true);
+                            }
+                        });
                         return;
                     }
                     try {
@@ -121,14 +130,29 @@ class AblumSaver {
                         Uri uri = Uri.fromFile(file);
                         intent.setData(uri);
                         current.sendBroadcast(intent);
-                        result.success(true);
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(true);
+                            }
+                        });
                     } catch (Exception e) {
                         e.printStackTrace();
-                        result.success(false);
+                        mainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.success(false);
+                            }
+                        });
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result.success(false);
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.success(false);
+                        }
+                    });
                 }
             }
         }).start();

@@ -68,3 +68,7 @@ add new api
 ### 0.0.5+3
 
 * fix no water mark export fail bug
+
+### 0.0.5+4
+
+* android call back to main thread
