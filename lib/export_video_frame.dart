@@ -46,28 +46,32 @@ class ExportVideoFrame {
   ///    - file: file of video
   ///    - albumName: save the album name
   ///    - waterMark:assetName "images/water_mark.png"
-  ///    - alignment: [0,0]represents the center of the rectangle. 
+  ///    - alignment: [0,0]represents the center of the rectangle.
   ///      from -1.0 to +1.0 is the distance from one side of the rectangle to the other side of the rectangle.
   ///      Default value [1,1] repesent right bottom
   ///    - scale: the scale ratio with respect water image size.Default value is 1.0
   /// Returns whether save success
-  static Future<bool> saveImage(File file, String albumName,{String waterMark,Alignment alignment,double scale}) async {
-    Map<String,dynamic> para = {"filePath":file.path,"albumName":albumName};
+  static Future<bool> saveImage(File file, String albumName,
+      {String? waterMark, Alignment? alignment, double? scale}) async {
+    Map<String, dynamic> para = {"filePath": file.path, "albumName": albumName};
     if (waterMark != null) {
-      para.addAll({"waterMark":waterMark});
+      para.addAll({"waterMark": waterMark});
       if (alignment != null) {
-        para.addAll({"alignment":{"x":alignment.x,"y":alignment.y}});
+        para.addAll({
+          "alignment": {"x": alignment.x, "y": alignment.y}
+        });
       } else {
-        para.addAll({"alignment":{"x":1,"y":1}});
+        para.addAll({
+          "alignment": {"x": 1, "y": 1}
+        });
       }
       if (scale != null) {
-        para.addAll({"scale":scale});
+        para.addAll({"scale": scale});
       } else {
-        para.addAll({"scale":1.0});
+        para.addAll({"scale": 1.0});
       }
     }
-    final bool result =
-        await _channel.invokeMethod('saveImage', para);
+    final bool result = await _channel.invokeMethod('saveImage', para);
     return result;
   }
 
@@ -76,11 +80,11 @@ class ExportVideoFrame {
   /// - parameters:
   ///    - filePath: file path of video
   ///    - number: export the number of frames
-  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android) 
-  static Future<List<File>> exportImage(String filePath, int number,double quality) async {
-    var para = {"filePath":filePath,"number":number,"quality":quality};
-    final List<dynamic> list =
-        await _channel.invokeMethod('exportImage', para);
+  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android)
+  static Future<List<File>> exportImage(
+      String? filePath, int number, double quality) async {
+    var para = {"filePath": filePath, "number": number, "quality": quality};
+    final List<dynamic> list = await _channel.invokeMethod('exportImage', para);
     var result = list
         .cast<String>()
         .map((path) => File.fromUri(Uri.file(path)))
@@ -92,9 +96,10 @@ class ExportVideoFrame {
   ///
   /// - parameters:
   ///    - filePath: file path of video
-  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android) 
-  static Future<List<File>> exportGifImage(String filePath, double quality) async {
-    var para = {"filePath":filePath,"quality":quality};
+  ///    - quality: scale of export frame."0" is lowest,"1" is origin.("0" is scale for 0.1 in android)
+  static Future<List<File>> exportGifImage(
+      String? filePath, double quality) async {
+    var para = {"filePath": filePath, "quality": quality};
     final List<dynamic> list =
         await _channel.invokeMethod('exportGifImagePathList', para);
     var result = list
@@ -110,11 +115,12 @@ class ExportVideoFrame {
   ///    - file: file of video
   ///    - duration: export the duration of frames
   ///    - radian: rotation the frame ,which will export frame.Rotation is clockwise.
-  static Future<File> exportImageBySeconds(File file, Duration duration,double radian) async {
+  static Future<File> exportImageBySeconds(
+      File file, Duration duration, double radian) async {
     var milli = duration.inMilliseconds;
-    var para = {"filePath":file.path,"duration":milli,"radian":radian};
-    final String path = await _channel
-        .invokeMethod('exportImageBySeconds', para);
+    var para = {"filePath": file.path, "duration": milli, "radian": radian};
+    final String path =
+        await _channel.invokeMethod('exportImageBySeconds', para);
     try {
       var result = File.fromUri(Uri.file(path));
       return result;

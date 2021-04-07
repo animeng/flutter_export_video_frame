@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 /** 
@@ -45,19 +46,17 @@ class MyApp extends StatelessWidget {
 }
 
 class ImageItem extends StatelessWidget {
-  ImageItem({this.image}) : super(key: ObjectKey(image));
+  ImageItem({required this.image}) : super(key: ObjectKey(image));
   final Image image;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: image
-    );
+    return Container(child: image);
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.images}) : super(key: key);
+  MyHomePage({Key? key, required this.images}) : super(key: key);
 
   final List<Image> images;
 
@@ -67,9 +66,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var _isClean = false;
+  final ImagePicker _picker = ImagePicker();
+
   Future _getImages() async {
-    var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
-    var images = await ExportVideoFrame.exportImage(file.path,10,0);
+    final PickedFile? file = await _picker.getVideo(
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 10));
+    var images = await ExportVideoFrame.exportImage(file!.path, 10, 0);
     var result = images.map((file) => Image.file(file)).toList();
     setState(() {
       widget.images.addAll(result);
@@ -78,8 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _getGifImages() async {
-    var file = await ImagePicker.pickImage(source: ImageSource.gallery);
-    var images = await ExportVideoFrame.exportGifImage(file.path,0);
+    final PickedFile? file =
+        await _picker.getImage(source: ImageSource.gallery);
+
+    var images = await ExportVideoFrame.exportGifImage(file!.path, 0);
     var result = images.map((file) => Image.file(file)).toList();
     setState(() {
       widget.images.addAll(result);
@@ -88,14 +92,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _getImagesByDuration() async {
-    var file = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    final PickedFile? pickedFile =
+        await _picker.getImage(source: ImageSource.gallery);
+    final File file = File(pickedFile!.path);
     var duration = Duration(seconds: 1);
-    var image = await ExportVideoFrame.exportImageBySeconds(file, duration,pi/2);
+    var image =
+        await ExportVideoFrame.exportImageBySeconds(file, duration, pi / 2);
     setState(() {
       widget.images.add(Image.file(image));
       _isClean = true;
     });
-    await ExportVideoFrame.saveImage(image, "Video Export Demo",waterMark: "images/water_mark.png",alignment: Alignment.bottomLeft,scale: 2.0);
+    await ExportVideoFrame.saveImage(image, "Video Export Demo",
+        waterMark: "images/water_mark.png",
+        alignment: Alignment.bottomLeft,
+        scale: 2.0);
   }
 
   Future _cleanCache() async {
@@ -130,10 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
       await _getGifImages();
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Export Image"),
@@ -144,15 +153,17 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Expanded(
               flex: 1,
-              child: 
-                GridView.extent(
-                maxCrossAxisExtent: 400,
-                childAspectRatio: 1.0,
-                padding: const EdgeInsets.all(4),
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
-                children: widget.images.length > 0 ? widget.images.map((image) => ImageItem(image:image)).toList() : [Container()]
-              ),
+              child: GridView.extent(
+                  maxCrossAxisExtent: 400,
+                  childAspectRatio: 1.0,
+                  padding: const EdgeInsets.all(4),
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
+                  children: widget.images.length > 0
+                      ? widget.images
+                          .map((image) => ImageItem(image: image))
+                          .toList()
+                      : [Container()]),
             ),
             Expanded(
               flex: 0,
