@@ -67,6 +67,27 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var _isClean = false;
   final ImagePicker _picker = ImagePicker();
+  Stream<File>? _imagesStream;
+
+  Future _getImagesByTime() async {
+    final PickedFile? file = await _picker.getVideo(
+        source: ImageSource.gallery, maxDuration: const Duration(seconds: 10));
+    _imagesStream = ExportVideoFrame.exportImagesFromFile(
+      File(file!.path),
+      const Duration(milliseconds: 500),
+      pi / 2,
+    );
+
+    setState(() {
+      _isClean = true;
+    });
+
+    _imagesStream!.listen((image) {
+      setState(() {
+        widget.images.add(Image.file(image));
+      });
+    });
+  }
 
   Future _getImages() async {
     final PickedFile? file = await _picker.getVideo(
@@ -141,6 +162,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future _handleClickFourth() async {
+    if (_isClean) {
+      await _cleanCache();
+    } else {
+      await _getImagesByTime();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,6 +236,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   color: Colors.orange,
                   child: Text(_isClean ? "Clean" : "Export gif image"),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 0,
+              child: Center(
+                child: MaterialButton(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  height: 40,
+                  minWidth: 150,
+                  onPressed: () {
+                    _handleClickFourth();
+                  },
+                  color: Colors.orange,
+                  child: Text(_isClean ? "Clean" : "Export images by interval"),
                 ),
               ),
             ),
