@@ -26,13 +26,21 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:media_info/media_info.dart';
 
 class ExportVideoFrame {
   static const MethodChannel _channel =
       const MethodChannel('export_video_frame');
 
+  static bool workOnImages = false;
+  static bool stopWoringOnImages = false;
+
   /// Returns whether clean success
   static Future<bool> cleanImageCache() async {
+    if (workOnImages) {
+      stopWoringOnImages = true;
+    }
+
     final String result = await _channel.invokeMethod('cleanImageCache');
     if (result == "success") {
       return true;
@@ -127,5 +135,31 @@ class ExportVideoFrame {
     } catch (e) {
       throw e;
     }
+  }
+
+  /// Returns the streme of images from video file
+  ///
+  /// - parameters:
+  ///    - file: file of video
+  ///    - interval: export the duration of frames
+  ///    - radian: rotation the frame ,which will export frame.Rotation is clockwise.
+  static Stream<File> exportImagesFromFile(
+      File file, Duration interval, double radian) async* {
+    var mediaInfo = MediaInfo();
+    var videoInfo = await mediaInfo.getMediaInfo(file.path);
+
+    var videoLength = Duration(milliseconds: videoInfo["durationMs"]);
+
+    workOnImages = true;
+    for (var i = Duration.zero; i < videoLength; i += interval) {
+      var image = await exportImageBySeconds(file, i, radian);
+      if (stopWoringOnImages) {
+        break;
+      } else {
+        yield image;
+      }
+    }
+    stopWoringOnImages = false;
+    workOnImages = false;
   }
 }
