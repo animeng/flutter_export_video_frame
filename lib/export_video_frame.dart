@@ -137,11 +137,11 @@ class ExportVideoFrame {
     }
   }
 
-  /// Returns the streme of images from video file
+  /// Returns Stream of images from video file
   ///
   /// - parameters:
   ///    - file: file of video
-  ///    - interval: export the duration of frames
+  ///    - interval: the time interval between each frame
   ///    - radian: rotation the frame ,which will export frame.Rotation is clockwise.
   static Stream<File> exportImagesFromFile(
       File file, Duration interval, double radian) async* {
