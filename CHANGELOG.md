@@ -72,3 +72,7 @@ add new api
 ### 0.0.5+4
 
 * android call back to main thread
+
+### 0.0.6
+
+* fix Null pointer exception in android
