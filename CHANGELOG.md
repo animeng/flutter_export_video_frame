@@ -76,3 +76,7 @@ add new api
 ### 0.0.6
 
 * fix Null pointer exception in android
+
+### 0.0.7
+
+* support Android embedding v2
