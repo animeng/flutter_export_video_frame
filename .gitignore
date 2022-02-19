@@ -7,14 +7,8 @@
 build/
 
 # Android related
-**/android/**/gradle-wrapper.jar
-**/android/.gradle
 **/android/captures/
-**/android/gradlew
-**/android/gradlew.bat
 **/android/local.properties
-**/android/.classpath
-**/android/.project
 **/android/.setting
 
 # iOS/XCode related
